@@ -1,6 +1,7 @@
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
+import CareerChatbot from "./components/CareerChatbot";
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -16,6 +17,7 @@ export default function RootLayout({ children }) {
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
         <Analytics />
+        <CareerChatbot />
       </body>
     </html>
   )
