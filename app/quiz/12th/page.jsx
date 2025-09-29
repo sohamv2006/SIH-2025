@@ -1,178 +1,171 @@
-"use client";
-
+"use client"
 import { useState } from "react";
+import Link from "next/link";
+import quizQuestions from "../../data/quizQuestions.json";
+import recommendedCourses from "../../data/recommendedCourses.json";
 
-export default function TwelfthQuiz() {
-  const [selectedSubject, setSelectedSubject] = useState(null);
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [showScore, setShowScore] = useState(false);
-  const [score, setScore] = useState(0);
+export default function TwelfthQuizPage() {
+  const [step, setStep] = useState(1); // 1: Subject, 2: Quiz, 3: Results
+  const [selectedSubject, setSelectedSubject] = useState("");
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [recommendations, setRecommendations] = useState([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [quizQuestionsState, setQuizQuestionsState] = useState([]);
+  const [quizAnswers, setQuizAnswers] = useState({});
 
-  // Quiz data with grade-appropriate questions for 12th grade
-  const subjects = {
-    Maths: [
-      { text: "What is the derivative of sin(x)?", options: ["cos(x)", "-sin(x)", "sin(x)", "1/cos(x)"], correct: "cos(x)" },
-      { text: "In a right-angled triangle, what is sin²θ + cos²θ equal to?", options: ["0", "1", "tanθ", "cotθ"], correct: "1" },
-      { text: "What is the integral of 1/x dx?", options: ["ln|x| + C", "x²/2 + C", "e^x + C", "sin(x) + C"], correct: "ln|x| + C" },
-      { text: "Which of these is a vector quantity?", options: ["Speed", "Distance", "Velocity", "Mass"], correct: "Velocity" },
-      { text: "What is the value of limit as x approaches 0 of sin(x)/x?", options: ["0", "1", "∞", "undefined"], correct: "1" },
-    ],
-    Physics: [
-      { text: "What is the unit of electric field strength?", options: ["Newton", "Volt/meter", "Coulomb", "Joule"], correct: "Volt/meter" },
-      { text: "According to Ohm's law, V = ?", options: ["IR", "I/R", "R/I", "I²R"], correct: "IR" },
-      { text: "What is the speed of light in vacuum?", options: ["3 × 10^6 m/s", "3 × 10^8 m/s", "3 × 10^10 m/s", "3 × 10^4 m/s"], correct: "3 × 10^8 m/s" },
-      { text: "Which law states that action equals reaction?", options: ["Newton's 1st Law", "Newton's 2nd Law", "Newton's 3rd Law", "Pascal's Law"], correct: "Newton's 3rd Law" },
-      { text: "What is the de Broglie wavelength related to?", options: ["Mass", "Momentum", "Energy", "Charge"], correct: "Momentum" },
-    ],
-    Chemistry: [
-      { text: "What is the atomic number of carbon?", options: ["6", "8", "12", "14"], correct: "6" },
-      { text: "Which type of bond is formed by sharing electrons?", options: ["Ionic", "Covalent", "Metallic", "Hydrogen"], correct: "Covalent" },
-      { text: "What is the pH of a neutral solution?", options: ["0", "7", "14", "1"], correct: "7" },
-      { text: "Which gas is produced when an acid reacts with a metal?", options: ["Oxygen", "Hydrogen", "Carbon dioxide", "Nitrogen"], correct: "Hydrogen" },
-      { text: "What is the molecular formula of glucose?", options: ["C6H12O6", "C12H22O11", "CH4", "C2H5OH"], correct: "C6H12O6" },
-    ],
-  };
-
-  const handleSubjectSelect = (subject) => {
-    setSelectedSubject(subject);
-    setQuestionIndex(0);
-    setAnswers({});
-    setShowScore(false);
-  };
-
-  const handleOptionSelect = (option) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [questionIndex]: option,
-    }));
-  };
-
-  const handleNext = () => {
-    if (questionIndex < subjects[selectedSubject].length - 1 && answers[questionIndex]) {
-      setQuestionIndex((prev) => prev + 1);
+  // Function to generate random questions
+  const generateRandomQuestions = () => {
+    const allSubjectQuestions = quizQuestions[selectedSubject] || [];
+    if (allSubjectQuestions.length === 0) {
+      console.log("No questions found for subject:", selectedSubject);
     }
+    const shuffled = allSubjectQuestions.sort(() => 0.5 - Math.random());
+    setQuizQuestionsState(shuffled.slice(0, 5)); // Select 5 random questions
   };
 
-  const handlePrevious = () => {
-    if (questionIndex > 0) {
-      setQuestionIndex((prev) => prev - 1);
-    }
-  };
-
-  const handleSubmit = () => {
-    if (answers[questionIndex]) {
-      let correctCount = 0;
-      const currentQuestions = subjects[selectedSubject];
-      currentQuestions.forEach((q, index) => {
-        if (answers[index] === q.correct) correctCount++;
-      });
-      setScore((correctCount / currentQuestions.length) * 100);
-      setShowScore(true);
-    }
-  };
-
-  if (!selectedSubject) {
+  // Subject selection
+  if (step === 1) {
+    const subjects = ["Physics", "Chemistry", "Biology", "Commerce"];
     return (
-      <div className="min-h-screen bg-background p-6">
-        <h1 className="text-3xl font-bold text-center mb-6">12th Grade Career Quiz</h1>
-        <div className="max-w-md mx-auto bg-card p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Select a Subject</h2>
-          <div className="space-y-2">
-            {Object.keys(subjects).map((subject) => (
-              <button
-                key={subject}
-                className="w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition-colors"
-                onClick={() => handleSubjectSelect(subject)}
-              >
-                {subject}
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-green-100 transform hover:scale-105 transition-all duration-300">
+          <div className="text-center mb-6">
+            <h1 className="text-4xl font-extrabold text-green-700 mb-4">Career Quiz Hub</h1>
+            <p className="text-gray-600 text-lg">Choose your subject for 12th Grade!</p>
+          </div>
+          <div className="space-y-5">
+            <select
+              value={selectedSubject}
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 text-lg"
+            >
+              <option value="">Choose a subject</option>
+              {subjects.map((subject, index) => (
+                <option key={index} value={subject}>
+                  {subject}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => {
+                setCurrentQuestionIndex(0);
+                generateRandomQuestions();
+                setStep(2);
+              }}
+              disabled={!selectedSubject}
+              className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 text-lg font-semibold flex items-center justify-center space-x-2 shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              <span>🎓</span>
+              <span>Start Quiz</span>
+            </button>
+            <Link href="/quiz/select">
+              <button className="w-full bg-gray-500 text-white py-3 rounded-xl hover:bg-gray-600 transition-all duration-300 text-lg font-semibold flex items-center justify-center space-x-2 shadow-md hover:shadow-lg mt-2">
+                Back
               </button>
-            ))}
+            </Link>
           </div>
         </div>
       </div>
     );
   }
 
-  const currentQuestions = subjects[selectedSubject];
-  const currentQuestion = currentQuestions[questionIndex];
+  // Quiz (5 random questions)
+  if (step === 2) {
+    const currentQuestions = quizQuestionsState;
+    const currentQuestion = currentQuestions[currentQuestionIndex];
 
-  if (showScore) {
+    const handleAnswer = (answer) => {
+      setQuizAnswers({ ...quizAnswers, [currentQuestion.id]: answer });
+      if (currentQuestionIndex < currentQuestions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      } else {
+        setQuizCompleted(true);
+        setStep(3);
+      }
+    };
+
     return (
-      <div className="min-h-screen bg-background p-6">
-        <h1 className="text-3xl font-bold text-center mb-6">12th Grade Career Quiz</h1>
-        <div className="max-w-md mx-auto bg-card p-6 rounded-lg shadow-md text-center">
-          <h2 className="text-2xl font-semibold mb-4">Quiz Completed!</h2>
-          <p className="mb-4">Your Score: {score}%</p>
-          <p className="mb-4">
-            {score >= 80
-              ? "Excellent! You have a strong grasp of your subject."
-              : score >= 60
-              ? "Good effort! Keep exploring your interests."
-              : "Nice try! Consider reviewing the basics."}
-          </p>
-          <button
-            className="w-full bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 transition-colors"
-            onClick={() => {
-              setSelectedSubject(null);
-              setShowScore(false);
-            }}
-          >
-            Retake Quiz
-          </button>
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-green-100 transform hover:scale-105 transition-all duration-300">
+          <div className="text-center mb-6">
+            <h1 className="text-4xl font-extrabold text-green-700 mb-4">Career Quiz Hub</h1>
+            <p className="text-gray-600 text-lg">Quiz for {selectedSubject} in 12th Grade</p>
+            <p className="text-gray-500">Question {currentQuestionIndex + 1} of {currentQuestions.length}</p>
+          </div>
+          <div className="space-y-5">
+            {currentQuestion && (
+              <>
+                <p className="text-gray-600 text-lg">{currentQuestion.question}</p>
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    className="w-full bg-gray-100 text-gray-800 py-2 rounded-xl hover:bg-gray-200 transition-all duration-300 text-lg font-medium flex items-center justify-center space-x-2 shadow-md"
+                  >
+                    {option}
+                  </button>
+                ))}
+              </>
+            )}
+            <button
+              onClick={() => setStep(1)}
+              className="w-full bg-gray-500 text-white py-3 rounded-xl hover:bg-gray-600 transition-all duration-300 text-lg font-semibold flex items-center justify-center space-x-2 shadow-md hover:shadow-lg mt-2"
+            >
+              Back
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-background p-6">
-      <h1 className="text-3xl font-bold text-center mb-6">12th Grade Career Quiz</h1>
-      <div className="max-w-md mx-auto bg-card p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold mb-4">Question {questionIndex + 1} of {currentQuestions.length}</h2>
-        <p className="mb-4">{currentQuestion.text}</p>
-        <div className="space-y-2">
-          {currentQuestion.options.map((option, index) => (
-            <label key={index} className="flex items-center space-x-2">
-              <input
-                type="radio"
-                name={`q${questionIndex}`}
-                className="form-radio"
-                checked={answers[questionIndex] === option}
-                onChange={() => handleOptionSelect(option)}
-              />
-              <span>{option}</span>
-            </label>
-          ))}
-        </div>
-        <div className="mt-6 flex justify-between">
-          {questionIndex > 0 && (
-            <button
-              className="bg-secondary text-secondary-foreground py-2 px-4 rounded-md hover:bg-secondary/90 transition-colors"
-              onClick={handlePrevious}
-            >
-              Previous
-            </button>
-          )}
-          {questionIndex < currentQuestions.length - 1 ? (
-            <button
-              className="bg-primary text-primary-foreground py-2 px-4 rounded-md hover:bg-primary/90 transition-colors"
-              onClick={handleNext}
-              disabled={!answers[questionIndex]}
-            >
-              Next Question
-            </button>
-          ) : (
-            <button
-              className="bg-primary text-primary-foreground py-2 px-4 rounded-md hover:bg-primary/90 transition-colors"
-              onClick={handleSubmit}
-              disabled={!answers[questionIndex]}
-            >
-              Submit Quiz
-            </button>
-          )}
+  // Results with recommendations
+  if (step === 3 && quizCompleted) {
+    const recommendedCoursesData = recommendedCourses[selectedSubject] || [];
+
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 border border-green-100 transform hover:scale-105 transition-all duration-300">
+          <div className="text-center mb-6">
+            <h1 className="text-4xl font-extrabold text-green-700 mb-4">Career Quiz Hub</h1>
+            <p className="text-gray-600 text-lg">Quiz Completed for {selectedSubject} in 12th Grade!</p>
+          </div>
+          <div className="space-y-5">
+            <div>
+              <h3 className="font-semibold text-gray-700 mb-3 text-center">Recommended Courses</h3>
+              {recommendedCoursesData.length > 0 ? (
+                recommendedCoursesData.map((course, index) => (
+                  <div key={index} className="p-4 border border-gray-200 rounded-xl mb-3 bg-gray-50">
+                    <img 
+                      src={course.thumbnail} 
+                      alt={course.name} 
+                      className="w-full h-32 object-cover rounded-md mb-2" 
+                      onError={(e) => { e.target.style.display = 'none'; }} 
+                    />
+                    <p className="font-medium text-gray-800 text-center">{course.name}</p>
+                    <Link href={course.youtubeLink} target="_blank" rel="noopener noreferrer" className="block mt-2">
+                      <button className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-2 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 text-lg font-semibold flex items-center justify-center space-x-2 shadow-md hover:shadow-lg">
+                        <span>🎥</span>
+                        <span>Watch on YouTube</span>
+                      </button>
+                    </Link>
+                  </div>
+                ))
+              ) : (
+                <p className="text-red-500 text-center">No courses available for {selectedSubject}.</p>
+              )}
+            </div>
+            <Link href="/dashboard">
+              <button className="w-full bg-green-500 text-white py-3 rounded-xl hover:bg-green-600 transition-all duration-300 text-lg font-semibold flex items-center justify-center space-x-2 shadow-md hover:shadow-lg">
+                <span>🏠</span>
+                <span>Back to Dashboard</span>
+              </button>
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  return null;
 }

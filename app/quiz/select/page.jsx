@@ -22,6 +22,11 @@ export default function QuizSelect() {
               <span>12th Grade Quiz</span>
             </button>
           </Link>
+          <Link href="/dashboard">
+            <button className="w-full bg-gray-500 text-white py-3 rounded-xl hover:bg-gray-600 transition-all duration-300 text-lg font-semibold flex items-center justify-center space-x-2 shadow-md hover:shadow-lg mt-2">
+              Back to Dashboard
+            </button>
+          </Link>
         </div>
       </div>
     </div>
