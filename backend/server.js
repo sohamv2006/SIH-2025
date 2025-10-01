@@ -1,36 +1,31 @@
-// backend/server.js
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-import collegeRoutes from "./routes/collegeRoutes.js";
-import profileRoutes from "./routes/profileRoutes.js"; // added
+import collegeRoutes from "./routes/collegeRoutes.js"; // adjust if needed
+import userRoutes from "./routes/userRoutes.js";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cors()); // allow frontend requests
+app.use(cors());
 
-// Use college routes
+// Routes
 app.use("/api/colleges", collegeRoutes);
+app.use("/api", userRoutes);
 
-// Use profile routes
-app.use("/api/profile", profileRoutes);
-
-// ✅ MongoDB connection (keeps your existing options)
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  dbName: "careerAdvisor"
+})
   .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+  .catch(err => console.error("❌ MongoDB connection error:", err));
 
 // Default route
-app.get("/", (req, res) => {
-  res.send("🎓 Career Advisor API is running...");
-});
+app.get("/", (req, res) => res.send("🎓 Career Advisor API is running..."));
 
 // Start server
 const PORT = process.env.PORT || 5000;
